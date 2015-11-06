@@ -1,0 +1,116 @@
+<html>
+<head>
+	<title>test</title>
+	<script type="text/javascript">
+		window.onload = function(){
+			var general = {};
+			var ColourArr = ["red", "blue", "green", "orange", "aqua", "violet", "white", "black", "yellow", "brown"];
+			var div_back = document.querySelector('#back');
+			var storage = window['localStorage'];
+			var idrect = 0;
+			function parrent_obj (){
+				this.offsetY = 9;
+				this.offsetX = 9;
+				this.div = document.createElement("div");
+				this.div.id=id_ran();
+				this.div.style.width = "100px";
+				this.div.style.height = "100px";
+				this.div.style.height = "100px";
+				this.div.style.position = "absolute";
+				this.div.style.top = "100px";
+				this.div.style.left = "100px";
+				this.div.style.background = "red";
+				this.div.style.cursor = "pointer";
+				this.div.innerHTML = "";
+			}
+			var obj = new parrent_obj();
+			obj.div.id = "newrect0";
+			obj.div.style = chk_style(obj.div.id, obj.div);
+			obj.div.listeners = addList(obj.div);
+			function chk_style (id, dv) {
+				if (storage.getItem(id)) {
+					dv.style.top = JSON.parse(storage.getItem(id)).top;
+					dv.style.left = JSON.parse(storage.getItem(id)).left;
+					dv.style.background = JSON.parse(storage.getItem(id)).background;
+				}else{
+					return false;
+				}
+			}
+			storage.setItem(obj.div.id, JSON.stringify(obj.div.style));
+			function moveFunction (event){
+				var obj_id = general[event.target.id];
+				obj_id.div.style.top = event.y - obj_id.offsetY + "px";
+				obj_id.div.style.left = event.x - obj_id.offsetX + "px";
+			}
+			function addList (arg_div) {
+				arg_div.addEventListener('mousedown', function (e) {
+					general[e.target.id].offsetY = e.y - parseInt(general[e.target.id].div.style.top);
+					general[e.target.id].offsetX = e.x - parseInt(general[e.target.id].div.style.left);
+					document.addEventListener('mousemove', moveFunction, false);
+				});
+				document.addEventListener('mouseup', function (e) {
+					document.removeEventListener('mousemove', moveFunction, false);
+				}, false);
+				arg_div.addEventListener('click', changeColour, false);
+				arg_div.addEventListener('contextmenu', delRect, false);
+			}
+			function id_ran (){
+				var id = "newrect"+idrect++;
+				for (var newrect in storage ){
+					if (newrect==id){
+						id = "newrect"+idrect++;
+					}else{
+						continue;
+					}
+				}
+				return id;
+			}
+			function delRect (rem) {
+				var targ = (rem.target);
+				targ.parentNode.removeChild(targ);
+				delete obj[targ.id];
+				storage.removeItem(targ.id);
+				return false;
+			}
+			function changeColour (chng){
+				var chng_id = chng.target.id;
+				chng.target.style.background = cng();
+				general[chng_id].div = chng.target;
+				general[chng_id].div.style.background = chng.target.background;
+				storage.setItem(chng_id, JSON.stringify(general[chng_id].div.style));
+				function cng(){
+					var cng_clr = ColourArr[Math.floor(Math.random()*ColourArr.length)];
+					if (cng_clr == chng.target.style.background  ){
+						cng_clr = ColourArr[Math.floor(Math.random()*ColourArr.length)];
+					}else{}
+					return cng_clr;
+				}
+			}
+			var createFunction = function (e) {
+				var Rect = new parrent_obj();
+				Rect.div.id = id_ran();
+				Rect.div.style = chk_style(obj.div.id, obj.div);
+				Rect.div.style.top = e.y - Rect.offsetY + "px";
+				Rect.div.style.left = e.x - Rect.offsetX + "px";
+				div_back.appendChild(Rect.div);
+				storage.setItem(Rect.div.id, JSON.stringify(Rect.div.style));
+				general[Rect.div.id] = Rect;
+				Rect.div.listeners = addList(Rect.div);
+			};
+			document.addEventListener('dblclick', createFunction, false);
+			for (var newrect in storage ){
+				var Rect = new parrent_obj();
+				Rect.div.id = newrect;
+				Rect.div.style = chk_style(Rect.div.id, Rect.div);
+				div_back.appendChild(Rect.div);
+				general[Rect.div.id] = Rect;
+				obj.div.listeners = addList(Rect.div);
+			}
+		};
+	</script>
+</head>
+<body >
+<div id="back" style="position: relative; width:100%; height:100%; background:#ccc" oncontextmenu="return false;">
+</div>
+</body>
+</html>
